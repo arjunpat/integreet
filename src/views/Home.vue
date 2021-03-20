@@ -48,7 +48,7 @@ export default {
   },
 
   destroyed() {
-    this.channel.leave()
+    //this.channel.leave()
     this.uninitializeEvents()
   },
 
@@ -96,6 +96,7 @@ export default {
       this.usernameSet = true
       this.localUser.info.username = this.username
       this.joinChannel()
+      this.$emit("joinedRoom")
     },
     initializeEvents() {
       document.addEventListener('keydown', this.keyUpDown)
