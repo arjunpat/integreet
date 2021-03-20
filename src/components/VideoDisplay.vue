@@ -1,6 +1,6 @@
 <template>
-  <div v-if="user.info" :style="{ position: 'absolute', top: user.info.y + 'px', left: user.info.x + 'px' }">
-    <svg :width="2*svgPadding + width" :height="2*svgPadding + height" :style="{ top: `-${svgPadding}px`, left: `-${svgPadding}px` }">
+  <div v-show="user.media && user.info" :style="user.info && { position: 'absolute', top: user.info.y + 'px', left: user.info.x + 'px' }">
+    <svg v-if="user.info" :width="2*svgPadding + width" :height="2*svgPadding + height" :style="{ top: `-${svgPadding}px`, left: `-${svgPadding}px` }">
       <path id="curve" fill="transparent" :d="svgPath"/>
       <text width="100%" :dy="bottomText ? 20 : -5">
         <textPath textLength="0" startOffset="50%" text-anchor="middle" xlink:href="#curve">{{ user.info.username }}</textPath>
@@ -29,8 +29,6 @@ svg {
 </style>
 
 <script>
-import { mapState } from 'vuex'
-
 export default {
   name: 'VideoDisplay',
 
@@ -44,7 +42,7 @@ export default {
     // Need videoTrack and audioTrack watchers to update each
     videoTrack: {
       handler(_, old) {
-        if (this.mounted && this.videoTrack && !old) {
+        if (this.$refs.vidContainer && this.videoTrack && !old) {
           this.playVideo()
         }
       },
@@ -76,7 +74,6 @@ export default {
   },
 
   computed: {
-    ...mapState([ 'users' ]),
     videoTrack() {
       return this.user.media ? this.user.media._videoTrack : null
     },
@@ -98,8 +95,7 @@ export default {
 
   methods: {
     playVideo() {
-      const vidContainer = this.$refs.vidContainer
-      this.videoTrack.play(vidContainer)
+      this.videoTrack.play(this.$refs.vidContainer)
     },
   },
 }

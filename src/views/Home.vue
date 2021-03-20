@@ -23,7 +23,7 @@
 
     <VideoDisplay v-if="localUser.media._videoTrack" :user="localUser" />
 
-    <VideoDisplay v-for="user in users" :key="user.uid" :user="user" />
+    <VideoDisplay v-for="user in userMap" :key="user.uid" :user="user" />
   </v-container>
 </template>
 
@@ -44,6 +44,15 @@ export default {
     VideoDisplay
   },
 
+  watch: {
+    userMap: {
+      handler() {
+        console.log('USERMAP: ', this.userMap)
+        //this.$forceUpdate()
+      },
+    }
+  },
+
   created() {
     AgoraRTC.setLogLevel(3)
 
@@ -54,6 +63,7 @@ export default {
 
   destroyed() {
     //this.channel.leave()
+    this.world.destroy()
     this.uninitializeEvents()
   },
 
@@ -80,19 +90,21 @@ export default {
           username: '',
           x: 100,
           y: 100,
-          velX: 0,
-          velY: 0,
         }
       },
       moveDir: { up: false, down: false, left: false, right: false },
       speed: 10,
       sendInfoInterval: null, 
-      roomId: 'test-room'
+      roomId: 'test-room',
+      world: null,
     }
   },
 
   computed: {
     ...mapState([ 'users' ]),
+    userMap() {
+      return this.world ? this.world.userMap : null
+    },
   },
 
   methods: {
@@ -167,16 +179,18 @@ export default {
         token: '006e29de10916734559a46f0fafb78d098dIAAPe33H9hTSTaB6+sxKZuZfzLMLiXBQx7vz+uFNPDnVQ49auH4AAAAAEABfjXZEm3RXYAEAAQCedFdg',
       }
       this.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
-      
+      this.world = new World(this.roomId)
 
       this.client.on('user-published', async (user, mediaType) => {
         await this.client.subscribe(user, mediaType)
-        if (user.audioTrack && user.videoTrack)
-          this.updateUser(user)
+        if (user.audioTrack && user.videoTrack) {
+          console.log('SETTING USER', user.uid)
+          this.world.updateUser(user)
+        }
       })
 
       this.client.on('user-unpublished', user => {
-        this.removeUser(user.uid)
+        this.world.removeUser(user.uid)
       })
 
       await Promise.all([
@@ -187,18 +201,16 @@ export default {
         let _
         [this.uid, this.localAudioTrack, this.localVideoTrack] = values
         this.localUser.media._videoTrack = this.localVideoTrack
-        this.world = new World(this.roomId)
-        await this.world.init(this.uid)
-        this.world.join(this.uid, this.localUser.info.username, this.localVideoTrack, this.localAudioTrack, this.localUser.info.x, this.localUser.info.y)
+        await this.world.init(this.uid, this.localUser.info)
 
         this.world.onLocationChange(user => {
-          this.updateUser(user)
+          //this.updateUser(user)
           // gives you the user that changed their location
           // "user" is of form { username, uid, x, y}
         });
 
         this.world.onUserJoin(user => {
-          this.updateUser(user)
+          //this.updateUser(user)
           // gives you the user that has just joined the world
           // "user" is of form { username, uid, x, y}
         });
