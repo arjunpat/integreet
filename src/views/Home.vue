@@ -189,11 +189,13 @@ export default {
         this.world.join(this.uid, this.localUser.info.username, this.localVideoTrack, this.localAudioTrack, this.localUser.info.x, this.localUser.info.y)
 
         this.world.onLocationChange(user => {
+          this.updateUser(user)
           // gives you the user that changed their location
           // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
         });
 
         this.world.onUserJoin(user => {
+          this.updateUser(user)
           // gives you the user that has just joined the world
           // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
         });
