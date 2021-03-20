@@ -43,6 +43,12 @@ class World {
 
         this.channel.join().then(() => {
           console.log("You joined channel successfully");
+
+          setTimeout(() => {
+            this.channel.sendMessage({
+              text: 'testing'
+            });
+          }, 2000);
           resolve();
         }).catch(error => {
           console.log("Failure to join channel: " + error);
@@ -57,13 +63,11 @@ class World {
     });
   }
 
-  join(uid, username, videoTrack, audioTrack, x, y) {
+  join(uid, username, x, y) {
     this.me = {
       type: 'user',
       uid,
       username,
-      videoTrack,
-      audioTrack,
       x,
       y
     };
@@ -86,8 +90,6 @@ class World {
   type: 'user',
   uid: 'afwhuuwaiaw83f89j3',
   username: 'Arjun Patrawala',
-  videoTrack: 'adsf',
-  audioTrack: 'asdfa',
   x: 50,
   y: 90
 }

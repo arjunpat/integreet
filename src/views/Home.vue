@@ -194,13 +194,13 @@ export default {
         this.world.onLocationChange(user => {
           this.updateUser(user)
           // gives you the user that changed their location
-          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+          // "user" is of form { username, uid, x, y}
         });
 
         this.world.onUserJoin(user => {
           this.updateUser(user)
           // gives you the user that has just joined the world
-          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+          // "user" is of form { username, uid, x, y}
         });
 
         // can call this.world.move(x, y) to set the current user's location
