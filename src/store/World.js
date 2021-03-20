@@ -114,7 +114,7 @@ class World {
             }
           })
 
-          // When a member joins/leaves
+          // Join/Leave and Message events
           this.channel.on('MemberJoined', memberId => {
             this.updateUserAttrs(memberId)
           })
@@ -122,37 +122,20 @@ class World {
           this.channel.on('MemberLeft', memberId => {
             this.removeUser(memberId)
           })
-          /*
-          this.channel.sendMessage({
-            text: JSON.stringify({
-              type: 'user',
-              ...userData,
-            })
+
+          this.channel.on('ChannelMessage', ({text}, senderId) => {
+            this.handleMessage({ uid: senderId, ...JSON.parse(text) })
           });
-          */
+          
           resolve();
         }).catch(error => {
           console.log("Failure to join channel: " + error);
-        });
-
-        this.channel.on('ChannelMessage', ({text}, senderId) => {
-          this.handleMessage({ uid: senderId, ...JSON.parse(text) })
         });
       }).catch(err => {
         console.log('AgoraRTM client login failure', err);
       });
     });
   }
-
-  onLocationChange(func) {
-    this.locationChangeHandler = func;
-  }
-
-  onUserJoin(func) {
-    this.userJoinHandler = func;
-  }
-
-  
 }
 
 /* message types

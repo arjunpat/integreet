@@ -1,5 +1,5 @@
 <template>
-  <div id="container" v-show="user.media && user.info" :style="user.info && { position: 'absolute', top: user.info.y + 'px', left: user.info.x + 'px' }">
+  <div id="container" v-show="user.media && user.info" :style="containerStyle">
     <svg v-if="user.info" :width="2*svgPadding + width" :height="2*svgPadding + height" :style="{ top: `-${svgPadding}px`, left: `-${svgPadding}px` }">
       <path id="curve" fill="transparent" :d="svgPath"/>
       <text width="100%" :dy="bottomText ? 20 : -5">
@@ -41,6 +41,8 @@ export default {
     user: { type: Object, required: true },
     width: { type: Number, default: 200 },
     height: { type: Number, default: 200 },
+    self: { type: Boolean, default: false },
+    localUserPos: { type: Object, default: null }
   },
 
   watch: {
@@ -94,6 +96,20 @@ export default {
       } else {
         // Upper semi-circle
         return `M ${svgPadding} ${svgPadding + height/2} A ${width/2} ${height/2}, 0, 1 1, ${svgPadding+width} ${svgPadding + height/2}`
+      }
+    },
+    containerStyle() {
+      if (!this.user.info) return null
+      
+      //console.log(window.innerWidth, window.innerHeight)
+      const localUserX = window.innerWidth/2
+      const localUserY = window.innerHeight/2
+      if (this.self) {
+        return { position: 'absolute', left: localUserX + 'px', top: localUserY + 'px', transform: `translate(${-this.width/2}px, ${-this.height/2}px)`}
+      } else {
+        const curUserX = this.user.info.x - this.localUserPos.x + localUserX
+        const curUserY = this.user.info.y - this.localUserPos.y + localUserY
+        return { position: 'absolute', left: curUserX + 'px', top: curUserY + 'px', transform: `translate(${-this.width/2}px, ${-this.height/2}px)` }
       }
     },
   },
