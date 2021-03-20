@@ -1,18 +1,251 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-container class="fill-height" style="position: relative;" fluid>
+    <v-fade-transition>
+      <v-row justify="center" v-if="!usernameSet">
+        <v-col cols="12" sm="8" md="6" lg="4">
+          <v-text-field
+            v-model="username"
+            label="Name"
+            class="mb-4"
+            outlined
+            hide-details
+            autocomplete="off"
+          ></v-text-field>
+          <v-btn @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+        </v-col>
+      </v-row>
+    </v-fade-transition>
+
+    <VideoDisplay v-if="localUser.media._videoTrack" :user="localUser" />
+
+    <VideoDisplay v-for="user in users" :key="user.uid" :user="user" />
+  </v-container>
 </template>
 
+<style scoped>
+</style>
+
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import AgoraRTC from 'agora-rtc-sdk-ng'
+import VideoDisplay from '@/components/VideoDisplay'
+import socket from '@/socket'
+
+import { mapState, mapMutations } from 'vuex'
 
 export default {
   name: 'Home',
+
   components: {
-    HelloWorld
-  }
+    VideoDisplay
+  },
+
+  created() {
+    AgoraRTC.setLogLevel(3)
+
+    this.initializeSockets()
+    this.initializeEvents()
+
+    window.requestAnimationFrame(this.animate)
+  },
+
+  destroyed() {
+    this.uninitializeSockets()
+    this.uninitializeEvents()
+  },
+
+  async beforeUnmount() {
+    clearInterval(this.sendInfoInterval)
+    await leaveChannel()
+  },
+
+  data() {
+    return {
+      uid: null,
+      client: null,
+      localAudioTrack: null,
+      localVideoTrack: null,
+      usernameSet: false,
+      username: '',
+      localUser: {
+        media: {
+          _videoTrack: null,
+        },
+        info: {
+          username: '',
+          x: 100,
+          y: 100,
+          velX: 0,
+          velY: 0,
+        }
+      },
+      moveDir: { up: false, down: false, left: false, right: false },
+      speed: 10,
+      sendInfoInterval: null, 
+    }
+  },
+
+  computed: {
+    ...mapState([ 'users' ]),
+  },
+
+  methods: {
+    ...mapMutations([ 'updateUser', 'clearUsers', 'removeUser' ]),
+    setUsername() {
+      this.usernameSet = true
+      this.localUser.info.username = this.username
+      socket.auth = { username: this.username }
+      socket.connect()
+    },
+    initializeSockets() {
+      socket.on('connect_error', err => {
+        if (err.message === 'invalid username') {
+          this.usernameSet = false
+        }
+      })
+
+      socket.on('users', users => {
+        //console.log('USERS: ', users)
+        for (let user of Object.values(users)) {
+          if (this.uid !== user.uid)
+            this.updateUser(user)
+        }
+      })
+
+      socket.on('user connected', user => {
+        if (this.uid !== user.uid) 
+          this.updateUser(user)
+      })
+
+      socket.on('user updated', user => {
+        if (this.uid !== user.uid) 
+          this.updateUser(user)
+      })
+
+      socket.on('connect', () => {
+        this.uid = socket.id
+        this.joinChannel()
+
+        this.setPosVelInterval = setInterval(() => {
+          const { x, y, velX, velY } = this.localUser.info
+          socket.emit('set pos vel', {
+            x,
+            y,
+            velX,
+            velY,
+          })
+        }, 100)
+      })
+    },
+    uninitializeSockets() {
+      socket.off('connect_error')
+      socket.off('users')
+      socket.off('user connected')
+      socket.off('user updated')
+    },
+    initializeEvents() {
+      document.addEventListener('keydown', this.keyUpDown)
+      document.addEventListener('keyup', this.keyUpDown)
+      window.addEventListener('blur', this.stopMovement)
+    },
+    uninitializeEvents() {
+      document.removeEventListener('keydown', this.keyUpDown)
+      document.removeEventListener('keyup', this.keyUpDown)
+      window.removeEventListener('blur', this.stopMovement)
+    },
+    stopMovement() {
+      this.moveDir = { up: false, down: false, left: false, right: false }
+    },
+    keyUpDown(e) {
+      if (e.key === 'w' || e.key === 'ArrowUp') {
+        this.moveDir.up = e.type === 'keydown'
+      } 
+      if (e.key === 'a' || e.key === 'ArrowLeft') {
+        this.moveDir.left = e.type === 'keydown'
+      }
+      if (e.key === 's' || e.key === 'ArrowDown') {
+        this.moveDir.down = e.type === 'keydown'
+      } 
+      if (e.key === 'd' || e.key === 'ArrowRight') {
+        this.moveDir.right = e.type === 'keydown'
+      }
+    },
+    animate() {
+      if (this.moveDir.up === this.moveDir.down) {
+        this.localUser.info.velY = 0 
+      } else {
+        this.localUser.info.velY = this.moveDir.up ? -this.speed : this.speed
+      }
+
+      if (this.moveDir.left === this.moveDir.right) {
+        this.localUser.info.velX = 0 
+      } else {
+        this.localUser.info.velX = this.moveDir.left ? -this.speed : this.speed
+      }
+      
+      if (Math.abs(this.localUser.info.velX) === this.speed && Math.abs(this.localUser.info.velY) === this.speed) {
+        // If moving diagonally, keep speed the same
+        this.localUser.info.velX /= Math.sqrt(2)
+        this.localUser.info.velY /= Math.sqrt(2)
+      }
+      
+      this.localUser.info.x += this.localUser.info.velX
+      this.localUser.info.y += this.localUser.info.velY
+
+      for (let user of Object.values(this.users)) {
+        user.info.x += user.info.velX
+        user.info.y += user.info.velY
+        this.updateUser(user.info)
+      }
+
+      window.requestAnimationFrame(this.animate)
+    },
+    async joinChannel() {
+      const options = {
+        appId: 'e29de10916734559a46f0fafb78d098d',
+        channel: 'test_channel',
+        token: '006e29de10916734559a46f0fafb78d098dIAAPe33H9hTSTaB6+sxKZuZfzLMLiXBQx7vz+uFNPDnVQ49auH4AAAAAEABfjXZEm3RXYAEAAQCedFdg',
+      }
+      this.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
+
+      this.client.on('user-published', async (user, mediaType) => {
+        await this.client.subscribe(user, mediaType)
+        if (user.audioTrack && user.videoTrack)
+          this.updateUser(user)
+      })
+
+      this.client.on('user-unpublished', user => {
+        this.removeUser(user.uid)
+      })
+
+      await Promise.all([
+        this.client.join(options.appId, options.channel, options.token, this.uid),
+        AgoraRTC.createMicrophoneAudioTrack(),
+        AgoraRTC.createCameraVideoTrack({ optimizationMode: 'motion' })
+      ]).then(values => {
+        let _
+        [_, this.localAudioTrack, this.localVideoTrack] = values
+        this.localUser.media._videoTrack = this.localVideoTrack
+      })
+
+      await this.client.publish([this.localAudioTrack, this.localVideoTrack])
+    },
+    async leaveChannel() {
+      this.localAudioTrack && this.localAudioTrack.close()
+      this.localVideoTrack && this.localVideoTrack.close()
+      this.localAudioTrack = null
+      this.localVideoTrack = null
+
+      if (this.client) {
+        this.client.remoteUsers.forEach(user => {
+          const playerContainer = document.getElementById (user.uid)
+          playerContainer && playerContainer.remove()
+        })
+
+        await this.client.leave()
+        this.clearUsers()
+        this.client = null
+      }
+    },
+  },
 }
 </script>
