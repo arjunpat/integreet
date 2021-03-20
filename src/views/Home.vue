@@ -4,6 +4,8 @@
       <v-row justify="center" v-if="!usernameSet">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card>
+            <v-card-title class="font-weight-bold">Join Room</v-card-title>
+            <v-card-text>
             <v-text-field
               v-model="username"
               label="Name"
@@ -12,7 +14,8 @@
               hide-details
               autocomplete="off"
             ></v-text-field>
-            <v-btn @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+            <v-btn fill @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -185,7 +188,7 @@ export default {
         [this.uid, this.localAudioTrack, this.localVideoTrack] = values
         this.localUser.media._videoTrack = this.localVideoTrack
         this.world = new World(this.roomId)
-        await this.world.init()
+        await this.world.init(this.uid)
         this.world.join(this.uid, this.localUser.info.username, this.localVideoTrack, this.localAudioTrack, this.localUser.info.x, this.localUser.info.y)
 
         this.world.onLocationChange(user => {
