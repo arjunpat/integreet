@@ -35,8 +35,6 @@ import AgoraRTC from 'agora-rtc-sdk-ng'
 import World from '@/store/World';
 import VideoDisplay from '@/components/VideoDisplay'
 
-import { mapState, mapMutations } from 'vuex'
-
 export default {
   name: 'Home',
 
@@ -55,21 +53,17 @@ export default {
 
   created() {
     AgoraRTC.setLogLevel(3)
-
-    this.initializeEvents()
-
-    window.requestAnimationFrame(this.animate)
   },
 
   destroyed() {
     //this.channel.leave()
-    this.world.destroy()
     this.uninitializeEvents()
   },
 
   async beforeUnmount() {
     clearInterval(this.sendInfoInterval)
     await leaveChannel()
+    await this.world.destroy()
   },
 
   data() {
@@ -97,28 +91,43 @@ export default {
       sendInfoInterval: null, 
       roomId: 'test-room',
       world: null,
+      oldPos: {
+        x: 100,
+        y: 100,
+      },
     }
   },
 
   computed: {
-    ...mapState([ 'users' ]),
     userMap() {
       return this.world ? this.world.userMap : null
     },
   },
 
   methods: {
-    ...mapMutations([ 'updateUser', 'clearUsers', 'removeUser' ]),
     setUsername() {
       this.usernameSet = true
       this.localUser.info.username = this.username
       this.joinChannel()
       this.$emit("joinedRoom")
+
+      this.initializeEvents()
+      window.requestAnimationFrame(this.animate)
     },
     initializeEvents() {
       document.addEventListener('keydown', this.keyUpDown)
       document.addEventListener('keyup', this.keyUpDown)
       window.addEventListener('blur', this.stopMovement)
+
+      this.sendInfoInterval = setInterval(() => {
+        if (this.world) {
+          if (this.oldPos.x != this.localUser.info.x || this.oldPos.y != this.localUser.info.y) {
+            this.world.move(this.localUser.info.x, this.localUser.info.y)
+            this.oldPos.x = this.localUser.info.x
+            this.oldPos.y = this.localUser.info.y
+          }
+        }
+      }, 100)
     },
     uninitializeEvents() {
       document.removeEventListener('keydown', this.keyUpDown)
@@ -160,15 +169,17 @@ export default {
         this.localUser.info.velX /= Math.sqrt(2)
         this.localUser.info.velY /= Math.sqrt(2)
       }
-      
       this.localUser.info.x += this.localUser.info.velX
       this.localUser.info.y += this.localUser.info.velY
 
-      for (let user of Object.values(this.users)) {
+      //console.log(this.localUser.info.x, this.localUser.info.y)
+
+      /*for (let user of Object.values(this.users)) {
         user.info.x += user.info.velX
         user.info.y += user.info.velY
         this.updateUser(user.info)
       }
+      */
 
       window.requestAnimationFrame(this.animate)
     },
@@ -201,7 +212,7 @@ export default {
         let _
         [this.uid, this.localAudioTrack, this.localVideoTrack] = values
         this.localUser.media._videoTrack = this.localVideoTrack
-        await this.world.init(this.uid, this.localUser.info)
+        await this.world.init(this.uid, {...this.localUser.info})
 
         this.world.onLocationChange(user => {
           //this.updateUser(user)

@@ -25,11 +25,20 @@ class World {
   constructor(world_uid) {
     this.userMap = {};
     this.worldUid = world_uid;
+    this.width = 5000
+    this.height = 1000
   }
 
   async destroy() {
     this.channel && this.channel.leave()
     this.messagingClient && this.messagingClient.logout();
+  }
+
+  updateUserAttrs(uid) {
+    this.messagingClient.getUserAttributes(uid).then(attrs => {
+      parseAttrs(attrs)
+      this.updateUser({ ...attrs, uid  })
+    })
   }
 
   updateUser(user) {
@@ -51,7 +60,11 @@ class World {
   }
 
   handleMessage(data) {
-    if (data.type === 'user') {
+    if (data.type === 'updated-attrs') {
+      this.updateUserAttrs(data.uid)
+    }
+
+    /*if (data.type === 'user') {
       if (this.userMap[data.uid]) {
         if (this.locationChangeHandler)
           this.locationChangeHandler(data);
@@ -59,15 +72,17 @@ class World {
         if (this.userJoinHandler)
           this.userJoinHandler(data);
       }
-      this.updateUser(data)
-      /*
-      this.userMap[data.uid] = data;*/
+      //this.updateUser(data)
+      //this.userMap[data.uid] = data;
       console.log('SET USERSE TOO: ', this.userMap)
-    }
+    }*/
   }
 
   move(x, y) {
-
+    this.messagingClient.addOrUpdateLocalUserAttributes(stringify({ x, y }))
+    this.channel.sendMessage({
+      text: JSON.stringify({ type: 'updated-attrs' })
+    })
   }
 
   init(uid, userData) {
@@ -94,20 +109,14 @@ class World {
             console.log('MEMBERS: ', members)
             for (let memberId of members) {
               if (memberId != uid) {
-                this.messagingClient.getUserAttributes(memberId).then(attrs => {
-                  parseAttrs(attrs)
-                  this.updateUser({ ...attrs, uid: memberId  })
-                })
+                this.updateUserAttrs(memberId)
               }
             }
           })
 
           // When a member joins/leaves
           this.channel.on('MemberJoined', memberId => {
-            this.messagingClient.getUserAttributes(memberId).then(attrs => {
-              parseAttrs(attrs)
-              this.updateUser({ ...attrs, uid: memberId  })
-            })
+            this.updateUserAttrs(memberId)
           })
 
           this.channel.on('MemberLeft', memberId => {
@@ -134,18 +143,6 @@ class World {
       });
     });
   }
-  
-  /*
-  join(uid, username, x, y) {
-    this.me = {
-      type: 'user',
-      uid,
-      username,
-      x,
-      y
-    };
-  }
-  */
 
   onLocationChange(func) {
     this.locationChangeHandler = func;

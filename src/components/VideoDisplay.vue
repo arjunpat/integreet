@@ -1,5 +1,5 @@
 <template>
-  <div v-show="user.media && user.info" :style="user.info && { position: 'absolute', top: user.info.y + 'px', left: user.info.x + 'px' }">
+  <div id="container" v-show="user.media && user.info" :style="user.info && { position: 'absolute', top: user.info.y + 'px', left: user.info.x + 'px' }">
     <svg v-if="user.info" :width="2*svgPadding + width" :height="2*svgPadding + height" :style="{ top: `-${svgPadding}px`, left: `-${svgPadding}px` }">
       <path id="curve" fill="transparent" :d="svgPath"/>
       <text width="100%" :dy="bottomText ? 20 : -5">
@@ -13,6 +13,11 @@
 </template>
 
 <style scoped>
+#container {
+  transition: top 0.1s, left 0.1s;
+}
+/* if have time: do this by watching the x and y vars and update accordingly based on the old value */
+
 .vid-container {
   border-radius: 50%;
   border: 3px solid;
