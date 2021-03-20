@@ -29,7 +29,6 @@
 import AgoraRTC from 'agora-rtc-sdk-ng'
 import AgoraRTM from 'agora-rtm-sdk'
 import VideoDisplay from '@/components/VideoDisplay'
-import socket from '@/socket'
 
 import { mapState, mapMutations } from 'vuex'
 
@@ -43,14 +42,13 @@ export default {
   created() {
     AgoraRTC.setLogLevel(3)
 
-    this.initializeMessaging()
     this.initializeEvents()
 
     window.requestAnimationFrame(this.animate)
   },
 
   destroyed() {
-    this.uninitializeSockets()
+    this.channel.leave()
     this.uninitializeEvents()
   },
 
@@ -64,6 +62,7 @@ export default {
       uid: null,
       client: null,
       messageClient: null,
+      channel: null,
       localAudioTrack: null,
       localVideoTrack: null,
       usernameSet: false,
@@ -83,6 +82,7 @@ export default {
       moveDir: { up: false, down: false, left: false, right: false },
       speed: 10,
       sendInfoInterval: null, 
+      roomId: 'test-room'
     }
   },
 
@@ -95,65 +95,43 @@ export default {
     setUsername() {
       this.usernameSet = true
       this.localUser.info.username = this.username
-      socket.auth = { username: this.username }
-      socket.connect()
+      this.joinChannel()
     },
     initializeMessaging() {
-      alert('hi')
-      client.on('ConnectionStateChanged', (newState, reason) => {
+
+      this.messagingClient = AgoraRTM.createInstance('4b7e608f84004ea2acd537eda95f6bf8'); 
+
+      this.messagingClient.on('ConnectionStateChanged', (newState, reason) => {
         console.log('on connection state changed to ' + newState + ' reason: ' + reason);
       });
 
-      client.login({ token: null, uid: 'wiwhaija92ijijf93j' }).then(() => {
+      this.messagingClient.login({ token: null, uid: `${this.uid}` }).then(() => {
         console.log('AgoraRTM client login success');
+        this.joinMessagingChannel()
       }).catch(err => {
         console.log('AgoraRTM client login failure', err);
+        this.usernameSet = false
       });
 
-      socket.on('connect_error', err => {
-        if (err.message === 'invalid username') {
-          this.usernameSet = false
-        }
-      })
-
-      socket.on('users', users => {
-        //console.log('USERS: ', users)
-        for (let user of Object.values(users)) {
-          if (this.uid !== user.uid)
-            this.updateUser(user)
-        }
-      })
-
-      socket.on('user connected', user => {
-        if (this.uid !== user.uid) 
-          this.updateUser(user)
-      })
-
-      socket.on('user updated', user => {
-        if (this.uid !== user.uid) 
-          this.updateUser(user)
-      })
-
-      socket.on('connect', () => {
-        this.uid = socket.id
-        this.joinChannel()
-
-        this.setPosVelInterval = setInterval(() => {
-          const { x, y, velX, velY } = this.localUser.info
-          socket.emit('set pos vel', {
-            x,
-            y,
-            velX,
-            velY,
-          })
-        }, 100)
-      })
     },
-    uninitializeSockets() {
-      socket.off('connect_error')
-      socket.off('users')
-      socket.off('user connected')
-      socket.off('user updated')
+    joinMessagingChannel() {
+      this.channel = this.messagingClient.createChannel(this.roomId);
+
+      this.channel.join().then(() => {
+        console.log("You joined channel successfully");
+      }).catch(error => {
+        console.log("Failure to join channel: " + error);
+      });
+
+      this.channel.on('ChannelMessage', ({ text }, senderId) => {
+        console.log(text + " from " + senderId);
+      });
+
+      this.setPosVelInterval = setInterval(() => {
+        const { x, y, velX, velY } = this.localUser.info
+        // send stuff to users
+
+      }, 100)
     },
     initializeEvents() {
       document.addEventListener('keydown', this.keyUpDown)
@@ -237,8 +215,9 @@ export default {
         AgoraRTC.createCameraVideoTrack({ optimizationMode: 'motion' })
       ]).then(values => {
         let _
-        [_, this.localAudioTrack, this.localVideoTrack] = values
+        [this.uid, this.localAudioTrack, this.localVideoTrack] = values
         this.localUser.media._videoTrack = this.localVideoTrack
+        this.initializeMessaging()
       })
 
       await this.client.publish([this.localAudioTrack, this.localVideoTrack])
