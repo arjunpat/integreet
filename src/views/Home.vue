@@ -29,7 +29,7 @@
 
 <script>
 import AgoraRTC from 'agora-rtc-sdk-ng'
-import AgoraRTM from 'agora-rtm-sdk'
+import World from '@/store/World';
 import VideoDisplay from '@/components/VideoDisplay'
 
 import { mapState, mapMutations } from 'vuex'
@@ -99,42 +99,6 @@ export default {
       this.localUser.info.username = this.username
       this.joinChannel()
       this.$emit("joinedRoom")
-    },
-    initializeMessaging() {
-
-      this.messagingClient = AgoraRTM.createInstance('4b7e608f84004ea2acd537eda95f6bf8'); 
-
-      this.messagingClient.on('ConnectionStateChanged', (newState, reason) => {
-        console.log('on connection state changed to ' + newState + ' reason: ' + reason);
-      });
-
-      this.messagingClient.login({ token: null, uid: `${this.uid}` }).then(() => {
-        console.log('AgoraRTM client login success');
-        this.joinMessagingChannel()
-      }).catch(err => {
-        console.log('AgoraRTM client login failure', err);
-        this.usernameSet = false
-      });
-
-    },
-    joinMessagingChannel() {
-      this.channel = this.messagingClient.createChannel(this.roomId);
-
-      this.channel.join().then(() => {
-        console.log("You joined channel successfully");
-      }).catch(error => {
-        console.log("Failure to join channel: " + error);
-      });
-
-      this.channel.on('ChannelMessage', ({ text }, senderId) => {
-        console.log(text + " from " + senderId);
-      });
-
-      this.setPosVelInterval = setInterval(() => {
-        const { x, y, velX, velY } = this.localUser.info
-        // send stuff to users
-
-      }, 100)
     },
     initializeEvents() {
       document.addEventListener('keydown', this.keyUpDown)
@@ -216,12 +180,26 @@ export default {
         this.client.join(options.appId, options.channel, options.token, this.uid),
         AgoraRTC.createMicrophoneAudioTrack(),
         AgoraRTC.createCameraVideoTrack({ optimizationMode: 'motion' })
-      ]).then(values => {
+      ]).then(async values => {
         let _
         [this.uid, this.localAudioTrack, this.localVideoTrack] = values
         this.localUser.media._videoTrack = this.localVideoTrack
-        this.initializeMessaging()
-      })
+        this.world = new World(this.roomId)
+        await this.world.init()
+        this.world.join(this.uid, this.localUser.info.username, this.localVideoTrack, this.localAudioTrack, this.localUser.info.x, this.localUser.info.y)
+
+        this.world.onLocationChange(user => {
+          // gives you the user that changed their location
+          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+        });
+
+        this.world.onUserJoin(user => {
+          // gives you the user that has just joined the world
+          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+        });
+
+        // can call this.world.move(x, y) to set the current user's location
+      });
 
       await this.client.publish([this.localAudioTrack, this.localVideoTrack])
     },
