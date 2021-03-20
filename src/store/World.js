@@ -36,7 +36,7 @@ class World {
         console.log('on connection state changed to ' + newState + ' reason: ' + reason);
       });
 
-      this.messagingClient.login({ token: null, uid: `${uid}` }).then(() => {
+      this.messagingClient.login({ token: null, uid }).then(() => {
         console.log('AgoraRTM client login success');
 
         this.channel = this.messagingClient.createChannel(this.worldUid);
