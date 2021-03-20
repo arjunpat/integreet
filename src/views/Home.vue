@@ -27,6 +27,7 @@
 
 <script>
 import AgoraRTC from 'agora-rtc-sdk-ng'
+import AgoraRTM from 'agora-rtm-sdk'
 import VideoDisplay from '@/components/VideoDisplay'
 import socket from '@/socket'
 
@@ -42,7 +43,7 @@ export default {
   created() {
     AgoraRTC.setLogLevel(3)
 
-    this.initializeSockets()
+    this.initializeMessaging()
     this.initializeEvents()
 
     window.requestAnimationFrame(this.animate)
@@ -62,6 +63,7 @@ export default {
     return {
       uid: null,
       client: null,
+      messageClient: null,
       localAudioTrack: null,
       localVideoTrack: null,
       usernameSet: false,
@@ -96,7 +98,18 @@ export default {
       socket.auth = { username: this.username }
       socket.connect()
     },
-    initializeSockets() {
+    initializeMessaging() {
+      alert('hi')
+      client.on('ConnectionStateChanged', (newState, reason) => {
+        console.log('on connection state changed to ' + newState + ' reason: ' + reason);
+      });
+
+      client.login({ token: null, uid: 'wiwhaija92ijijf93j' }).then(() => {
+        console.log('AgoraRTM client login success');
+      }).catch(err => {
+        console.log('AgoraRTM client login failure', err);
+      });
+
       socket.on('connect_error', err => {
         if (err.message === 'invalid username') {
           this.usernameSet = false
@@ -206,6 +219,7 @@ export default {
         token: '006e29de10916734559a46f0fafb78d098dIAAPe33H9hTSTaB6+sxKZuZfzLMLiXBQx7vz+uFNPDnVQ49auH4AAAAAEABfjXZEm3RXYAEAAQCedFdg',
       }
       this.client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
+      
 
       this.client.on('user-published', async (user, mediaType) => {
         await this.client.subscribe(user, mediaType)
