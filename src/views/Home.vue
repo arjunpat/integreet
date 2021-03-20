@@ -3,15 +3,17 @@
     <v-fade-transition>
       <v-row justify="center" v-if="!usernameSet">
         <v-col cols="12" sm="8" md="6" lg="4">
-          <v-text-field
-            v-model="username"
-            label="Name"
-            class="mb-4"
-            outlined
-            hide-details
-            autocomplete="off"
-          ></v-text-field>
-          <v-btn @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+          <v-card>
+            <v-text-field
+              v-model="username"
+              label="Name"
+              class="mb-4"
+              outlined
+              hide-details
+              autocomplete="off"
+            ></v-text-field>
+            <v-btn @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+          </v-card>
         </v-col>
       </v-row>
     </v-fade-transition>
