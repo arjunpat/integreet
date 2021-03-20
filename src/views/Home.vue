@@ -185,6 +185,18 @@ export default {
         this.world = new World(this.roomId)
         await this.world.init()
         this.world.join(this.uid, this.localUser.info.username, this.localVideoTrack, this.localAudioTrack, this.localUser.info.x, this.localUser.info.y)
+
+        this.world.onLocationChange(user => {
+          // gives you the user that changed their location
+          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+        });
+
+        this.world.onUserJoin(user => {
+          // gives you the user that has just joined the world
+          // "user" is of form { username, uid, videoTrack, audioTrack, x, y}
+        });
+
+        // can call this.world.move(x, y) to set the current user's location
       });
 
       await this.client.publish([this.localAudioTrack, this.localVideoTrack])
