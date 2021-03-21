@@ -25,6 +25,8 @@
       </v-row>
     </v-fade-transition>
 
+    <v-btn v-if="usernameSet" @click="leave()" depressed color="error" style="position: absolute; right: 10px; top: 10px;">Leave</v-btn>
+
     <VideoDisplay v-if="localUser.media._videoTrack" :user="localUser" self />
 
     <VideoDisplay v-for="user in userMap" :key="user.uid" :user="user" :local-user-pos="localUserPos" />
@@ -78,7 +80,6 @@ export default {
     return {
       uid: null,
       client: null,
-      messageClient: null,
       channel: null,
       localAudioTrack: null,
       localVideoTrack: null,
@@ -103,7 +104,7 @@ export default {
         x: 100,
         y: 100,
       },
-      containerBackground: '#75dfff'
+      containerBackground: '#75dfff',
     }
   },
 
@@ -117,12 +118,15 @@ export default {
   },
 
   methods: {
+    leave() {
+      vm.$forceUpdate();
+    },
     setUsername() {
       this.usernameSet = true
       this.localUser.info.username = this.username
       this.joinChannel()
       this.$emit("joinedRoom")
-
+      this.started = true
       this.initializeEvents()
       window.requestAnimationFrame(this.animate)
     },
