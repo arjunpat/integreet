@@ -23,9 +23,13 @@
 
 <style scoped>
 .backgroundasdf {
-  background-color: lightblue;
   position: absolute;
   z-index: 1;
+  background:
+  linear-gradient(135deg, lightblue 21px, #d9ecff 22px, #d9ecff 24px, transparent 24px, transparent 67px, #d9ecff 67px, #d9ecff 69px, transparent 69px),
+  linear-gradient(225deg, lightblue 21px, #d9ecff 22px, #d9ecff 24px, transparent 24px, transparent 67px, #d9ecff 67px, #d9ecff 69px, transparent 69px)0 64px;
+  background-color:lightblue;
+  background-size: 64px 128px;
 }
 
 </style>
@@ -57,8 +61,15 @@ export default {
       objects: [
         {
           type: 'table',
-          x: 200,
-          y: 100,
+          x: 300,
+          y: 400,
+          width: 300,
+          height: 600,
+        },
+        {
+          type: 'table',
+          x: 1400,
+          y: 400,
           width: 300,
           height: 600,
         }

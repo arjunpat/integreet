@@ -64,6 +64,15 @@ export default {
       },
       immediate: true,
     },
+    videoTrackPlaying: {
+      handler() {
+        if (!this.videoTrackPlaying && this.$refs.vidContainer && this.videoTrack) {
+          console.log('PLAY VIDEO AGAIN')
+          this.playVideo()
+        }
+      },
+      immediate: true,
+    }
   },
   
   mounted() {
@@ -82,6 +91,9 @@ export default {
   },
 
   computed: {
+    videoTrackPlaying() {
+      return this.videoTrack ? this.videoTrack.isPlaying : false
+    },
     videoTrack() {
       return this.user.media ? this.user.media._videoTrack : null
     },

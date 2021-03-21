@@ -25,8 +25,8 @@ class World {
   constructor(world_uid) {
     this.userMap = {};
     this.worldUid = world_uid;
-    this.width = 5000
-    this.height = 1000
+    this.width = 2000
+    this.height = 2000
   }
 
   async destroy() {
