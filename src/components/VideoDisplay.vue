@@ -15,6 +15,7 @@
 <style scoped>
 #container {
   transition: top 0.1s, left 0.1s;
+  z-index: 5;
 }
 /* if have time: do this by watching the x and y vars and update accordingly based on the old value */
 

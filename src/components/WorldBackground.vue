@@ -6,8 +6,8 @@
 <style scoped>
 .backgroundasdf {
   background-color: lightblue;
-  position: 'absolute';
-  left: 100px;
+  position: absolute;
+  z-index: 1;
 }
 
 </style>
@@ -43,12 +43,20 @@ export default {
     backgroundStyle() {
       if (!this.world) return null
 
+      console.log('left: ', this.localUserX - window.innerWidth/2)
+
       return {
-        //left: this.localUserPos.x - window.innerWidth/2,
-        //top: this.localUserPos.y - window.innerHeight/2,
+        left: window.innerWidth/2 - this.localUserX + 'px',
+        top: window.innerHeight/2 - this.localUserY + 'px',
         width: this.world.width + 'px',
         height: this.world.height + 'px',
       }
+    },
+    localUserX() {
+      return this.localUserPos.x
+    },
+    localUserY() {
+      return this.localUserPos.y
     },
   },
 }
