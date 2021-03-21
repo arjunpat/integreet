@@ -1,20 +1,24 @@
 <template>
-  <v-container id="worldContainer" fluid>
+  <v-container id="worldContainer" fluid :style="{backgroundColor: containerBackground}">
     <v-fade-transition>
-      <v-row justify="center" v-if="!usernameSet">
+      <v-row justify="center" style="margin-top: 30vh;" v-if="!usernameSet">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card>
-            <v-card-title class="font-weight-bold">Join Room</v-card-title>
-            <v-card-text>
+            <v-card-title class="font-weight-bold" style="background-color: #29B6F6; ">
+              <h1 class="mx-auto">
+              Integreet
+              </h1>
+            </v-card-title>
+            <v-card-text class="mt-3">
             <v-text-field
               v-model="username"
-              label="Name"
+              label="Enter your name here"
               class="mb-4"
               outlined
               hide-details
               autocomplete="off"
             ></v-text-field>
-            <v-btn fill @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+            <v-btn block @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
@@ -99,6 +103,7 @@ export default {
         x: 100,
         y: 100,
       },
+      containerBackground: '#75dfff'
     }
   },
 
@@ -252,12 +257,6 @@ export default {
   overflow: hidden; 
   height: 100vh; 
   width: 100vw;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-#worldContainer::-webkit-scrollbar {
-  display: none;
 }
 
 </style>
