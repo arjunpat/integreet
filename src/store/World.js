@@ -79,10 +79,12 @@ class World {
   }
 
   move(x, y) {
-    this.messagingClient.addOrUpdateLocalUserAttributes(stringify({ x, y }))
-    this.channel.sendMessage({
-      text: JSON.stringify({ type: 'updated-attrs' })
-    })
+    if (this.channel) {
+      this.messagingClient.addOrUpdateLocalUserAttributes(stringify({ x, y }))
+      this.channel.sendMessage({
+        text: JSON.stringify({ type: 'updated-attrs' })
+      })
+    }
   }
 
   init(uid, userData) {
@@ -126,7 +128,7 @@ class World {
           this.channel.on('ChannelMessage', ({text}, senderId) => {
             this.handleMessage({ uid: senderId, ...JSON.parse(text) })
           });
-          
+
           resolve();
         }).catch(error => {
           console.log("Failure to join channel: " + error);
