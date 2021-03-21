@@ -4,7 +4,7 @@
       app
       color="primary"
       dark
-      v-if="!started"
+      v-if="false"
     >
       <div class="d-flex align-center">
         <h1>Integreet</h1>
