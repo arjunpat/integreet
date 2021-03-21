@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height" style="position: relative;" fluid>
+  <v-container id="worldContainer" fluid>
     <v-fade-transition>
       <v-row justify="center" v-if="!usernameSet">
         <v-col cols="12" sm="8" md="6" lg="4">
@@ -246,5 +246,18 @@ export default {
 </script>
 
 <style scoped>
+
+#worldContainer {
+  position: relative; 
+  overflow: hidden; 
+  height: 100vh; 
+  width: 100vw;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+#worldContainer::-webkit-scrollbar {
+  display: none;
+}
 
 </style>
