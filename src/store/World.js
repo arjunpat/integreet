@@ -80,9 +80,10 @@ class World {
 
   move(x, y) {
     if (this.channel) {
-      this.messagingClient.addOrUpdateLocalUserAttributes(stringify({ x, y }))
-      this.channel.sendMessage({
-        text: JSON.stringify({ type: 'updated-attrs' })
+      this.messagingClient.addOrUpdateLocalUserAttributes(stringify({ x, y })).then(() => {
+        this.channel.sendMessage({
+          text: JSON.stringify({ type: 'updated-attrs' })
+        })
       })
     }
   }
