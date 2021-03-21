@@ -59,7 +59,7 @@ export default {
     audioTrack: {
       handler(_, old) {
         if (this.audioTrack && !old) {
-          this.audioTrack.play()
+          // this.audioTrack.play()
         }
       },
       immediate: true,
