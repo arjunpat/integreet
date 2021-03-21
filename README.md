@@ -1,4 +1,4 @@
-# dvhacks
+# Integreet
 
 ## Project setup
 ```
