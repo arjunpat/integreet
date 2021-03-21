@@ -98,11 +98,11 @@ class World {
         console.log('on connection state changed to ' + newState + ' reason: ' + reason);
       });
 
-      this.messagingClient.login({ token: null, uid: `${uid}` }).then(() => {
+      this.messagingClient.login({ token: null, uid: `${uid}` }).then(async () => {
         console.log('AgoraRTM client login success');
 
         // Set local attributes
-        this.messagingClient.setLocalUserAttributes(stringify(userData))
+        await this.messagingClient.setLocalUserAttributes(stringify(userData))
 
         // Join channel
         this.channel = this.messagingClient.createChannel(this.worldUid);
