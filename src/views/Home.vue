@@ -23,7 +23,9 @@
 
     <VideoDisplay v-if="localUser.media._videoTrack" :user="localUser" self />
 
-    <VideoDisplay v-for="user in userMap" :key="user.uid" :user="user" :local-user-pos="{ x: localUser.info.x, y: localUser.info.y }" />
+    <VideoDisplay v-for="user in userMap" :key="user.uid" :user="user" :local-user-pos="localUserPos" />
+
+    <WorldBackground :local-user-pos="localUserPos" :world="world"/>
   </v-container>
 </template>
 
@@ -34,12 +36,14 @@
 import AgoraRTC from 'agora-rtc-sdk-ng'
 import World from '@/store/World';
 import VideoDisplay from '@/components/VideoDisplay'
+import WorldBackground from '@/components/WorldBackground'
 
 export default {
   name: 'Home',
 
   components: {
-    VideoDisplay
+    VideoDisplay,
+    WorldBackground,
   },
 
   watch: {
@@ -102,6 +106,9 @@ export default {
     userMap() {
       return this.world ? this.world.userMap : null
     },
+    localUserPos() {
+      return { x: this.localUser.info.x, y: this.localUser.info.y }
+    }
   },
 
   methods: {
