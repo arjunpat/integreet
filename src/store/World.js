@@ -53,6 +53,8 @@ class World {
       this.userMap[user.uid].info = { ...this.userMap[user.uid].info, ...user }
       //Vue.set(this.userMap[user.uid], 'info', { ...this.userMap[user.uid].info, ...user })
     }
+
+    console.log('USERMAP IS ', this.userMap)
   }
 
   removeUser(uid) {

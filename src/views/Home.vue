@@ -285,8 +285,8 @@ export default {
         }
         let d = this.distance(x, y, this.userMap[uid].info.x, this.userMap[uid].info.y);
         let volume = Math.max(0, (500 - d) / 500);
-        console.log('volume: ' + volume);
-        this.audioTrackByUID[uid].volume = volume;
+        //console.log('volume: ' + volume);
+        this.audioTrackByUID[uid].setVolume(volume * 1000);
       }
     }
   },
