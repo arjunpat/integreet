@@ -1,31 +1,42 @@
 <template>
   <v-container id="worldContainer" fluid :style="{backgroundColor: containerBackground}">
     <v-fade-transition>
-      <v-row justify="center" style="margin-top: 30vh;" v-if="!usernameSet">
+      <v-row justify="center" style="margin-top: 20vh;" v-if="!usernameSet">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card>
-            <v-card-title class="font-weight-bold" style="background-color: #29B6F6; ">
-              <h1 class="mx-auto">
-              Integreet
+            <v-card-title class="font-weight-bold" style="background-color: #57c2f2; height: 100px">
+              <v-row justify="center">
+              <v-img src="@/assets/logo.png" max-width="60"></v-img>
+              <h1 id="main-logo" style="margin-top: 15px;" >
+              INTEGREET
               </h1>
+              </v-row>
             </v-card-title>
             <v-card-text class="mt-3">
             <v-text-field
               v-model="username"
-              label="Enter your name here"
+              label="Your name"
+              class="mb-2"
+              outlined
+              hide-details
+              autocomplete="off"
+            ></v-text-field>
+            <v-text-field
+              v-model="roomId"
+              label="Room name"
               class="mb-4"
               outlined
               hide-details
               autocomplete="off"
             ></v-text-field>
-            <v-btn block @click="setUsername">{{ !client ? 'Join Room' : 'Leave Room' }}</v-btn>
+            <v-btn block @click="setUsername">{{ !client ? 'Enter Room' : 'Leave Room' }}</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
     </v-fade-transition>
 
-    <v-btn v-if="usernameSet" @click="leave()" depressed color="error" style="position: absolute; right: 10px; top: 10px;">Leave</v-btn>
+    <v-btn v-if="usernameSet" @click="leave()" depressed color="error" style="position: absolute; right: 10px; top: 10px; z-index: 100;">Leave</v-btn>
 
     <VideoDisplay v-if="localUser.media._videoTrack" :user="localUser" self />
 
@@ -99,7 +110,7 @@ export default {
       moveDir: { up: false, down: false, left: false, right: false },
       speed: 10,
       sendInfoInterval: null, 
-      roomId: 'test-room',
+      roomId: '',
       world: null,
       oldPos: {
         x: 100,
@@ -120,7 +131,7 @@ export default {
 
   methods: {
     leave() {
-      vm.$forceUpdate();
+      this.$router.go()
     },
     setUsername() {
       this.usernameSet = true
@@ -283,12 +294,19 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
 
 #worldContainer {
   position: relative; 
   overflow: hidden; 
   height: 100vh; 
   width: 100vw;
+}
+
+#main-logo {
+  font-family: 'Poppins';
+  color: white;
+  font-size: 30px;
 }
 
 </style>
