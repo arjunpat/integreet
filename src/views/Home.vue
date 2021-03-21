@@ -49,8 +49,8 @@ export default {
   watch: {
     userMap: {
       handler() {
-        console.log('USERMAP: ', this.userMap)
-        //this.$forceUpdate()
+        console.log('usermap changed: ')
+        this.setVolumes();
       },
     }
   },
@@ -80,6 +80,7 @@ export default {
       localVideoTrack: null,
       usernameSet: false,
       username: '',
+      audioTrackByUID: {},
       localUser: {
         media: {
           _videoTrack: null,
@@ -188,6 +189,8 @@ export default {
       }
       */
 
+      this.setVolumes();
+
       window.requestAnimationFrame(this.animate)
     },
     async joinChannel() {
@@ -241,6 +244,31 @@ export default {
         this.client = null
       }
     },
+
+    distance(x0, y0, x1, y1) {
+      return Math.sqrt((x0 - x1) ** 2, (y0 - y1) ** 2);
+    },
+
+    setVolumes() {
+      let { x, y } = this.localUserPos;
+      // for (let uid in this.audioTrackByUID) {
+      //   if (!this.userMap[uid]) {
+      //     this.audioTrackByUID[uid].pause();
+      //     delete this.audioTrackByUID[uid];
+      //   }
+      // }
+      for (let uid in this.userMap) {
+        if (!this.userMap[uid].media || !this.userMap[uid].info || typeof this.userMap[uid].info.x !== 'number' || !this.userMap[uid].media._audioTrack) continue;
+        if (!this.audioTrackByUID[uid]) {
+          this.audioTrackByUID[uid] = this.userMap[uid].media._audioTrack;
+          this.audioTrackByUID[uid].play();
+        }
+        let d = this.distance(x, y, this.userMap[uid].info.x, this.userMap[uid].info.y);
+        let volume = Math.max(0, (500 - d) / 500);
+        console.log('volume: ' + volume);
+        this.audioTrackByUID[uid].volume = volume;
+      }
+    }
   },
 }
 </script>
