@@ -75,6 +75,7 @@ export default {
         top: window.innerHeight/2 - this.localUserY + 'px',
         width: this.world.width + 'px',
         height: this.world.height + 'px',
+        borderRadius: '25px'
       }
     },
     localUserX() {

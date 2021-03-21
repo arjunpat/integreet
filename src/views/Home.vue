@@ -7,7 +7,7 @@
             <v-card-title class="font-weight-bold" style="background-color: #57c2f2; height: 100px">
               <v-row justify="center">
               <v-img src="@/assets/logo.png" max-width="60"></v-img>
-              <h1 id="main-logo" style="margin-top: 15px;" >
+              <h1 id="main-logo" style="margin-top: 14px;" >
               INTEGREET
               </h1>
               </v-row>
