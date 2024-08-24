@@ -1,5 +1,8 @@
 # Integreet
 
+## Demo video
+https://www.youtube.com/watch?v=uz8Kd36CFGo
+
 ## Project setup
 ```
 npm install
